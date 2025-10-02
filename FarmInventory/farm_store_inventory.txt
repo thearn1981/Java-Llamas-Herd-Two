@@ -1,0 +1,8 @@
+Fresh Eggs (dozen)|4.5|24|Dairy
+Milk (gallon)|5.99|15|Dairy
+Honey (16oz)|8.99|12|Pantry
+Apples (lb)|2.49|50|Produce
+Tomatoes (lb)|3.29|30|Produce
+Sweet Corn (ear)|0.75|100|Produce
+Beef (lb)|8.99|20|Meat
+Chicken (lb)|5.99|25|Meat
