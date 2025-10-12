@@ -1,0 +1,6 @@
+serviceName,customerName,petName,date,time,price,paid
+Goat Grooming,Mary L.,Billy,2025-10-10,10:00 AM,35.0,PAID
+Chicken Health Check,Tom S.,Henrietta,2025-10-11,02:30 PM,25.0,UNPAID
+Rabbit Nail Trim,Alice R.,Snowball,2025-10-11,11:15 AM,20.0,PAID
+Duck Bathing,Ben H.,Quackers,2025-10-12,03:00 PM,30.0,PAID
+Dog Grooming,James H.,Norman,2025-10-15,2:00 pm,65.0,UNPAID
