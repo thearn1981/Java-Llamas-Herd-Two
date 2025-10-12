@@ -9,15 +9,7 @@ import javax.swing.*;
 /**
  * Farm Life Inc. - Simple GUI Tracker
  * Tracks: Inventory items, Services (with schedule & paid/unpaid), Animal sales/resales.
- * Storage: CSV files in working directory (inventory.csv, services.csv, animals.csv).
- *
- * Designed to be beginner-friendly:
- * - Single source file
- * - JOptionPane menus/buttons
- * - Small classes for reuse
- * - Try/catch for input parsing and file I/O
- *
- * Tip: When entering text, avoid commas; the app will replace commas with semicolons for CSV safety.
+ * Storage: CSV files in working directory (inventory.csv, services.csv, animals.csv). 
  */
 public class FarmLifeApp {
 
@@ -93,7 +85,7 @@ public class FarmLifeApp {
         String name;      // animal name/identifier
         String breed;
         String gender;
-        String age;       // free text to keep it simple (e.g., "6 mo")
+        String age;       
         double price;
         String breederName; // empty if not from local breeder
 
