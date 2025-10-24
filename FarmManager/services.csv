@@ -1,6 +1,15 @@
-serviceName,customerName,petName,date,time,price,paid
-Goat Grooming,Mary L.,Billy,2025-10-10,10:00 AM,35.0,PAID
-Chicken Health Check,Tom S.,Henrietta,2025-10-11,02:30 PM,25.0,UNPAID
-Rabbit Nail Trim,Alice R.,Snowball,2025-10-11,11:15 AM,20.0,PAID
-Duck Bathing,Ben H.,Quackers,2025-10-12,03:00 PM,30.0,PAID
-Dog Grooming,James H.,Norman,2025-10-15,2:00 pm,65.0,UNPAID
+Horse Grooming,Sarah Mitchell,Thunder,11-15-2024,10:00 AM,45.0,PAID
+Veterinary Checkup,John Davis,Bella,11-18-2024,2:30 PM,85.0,PAID
+Farrier Service,Mary Johnson,Storm,11-20-2024,9:00 AM,65.0,UNPAID
+Dog Training Session,Robert Brown,Max,11-22-2024,11:00 AM,50.0,PAID
+Cat Spay Surgery,Jennifer Wilson,Whiskers,11-25-2024,8:00 AM,150.0,PAID
+Sheep Shearing,David Anderson,Flock,12-01-2024,1:00 PM,120.0,UNPAID
+Dental Cleaning,Lisa Thompson,Duke,12-03-2024,10:30 AM,75.0,UNPAID
+Hoof Trimming,Michael Garcia,Spirit,12-05-2024,3:00 PM,40.0,UNPAID
+Boarding Service,Emily Martinez,Luna,12-08-2024,4:00 PM,35.0,PAID
+Vaccination,Christopher Lee,Rocky,12-10-2024,9:30 AM,55.0,UNPAID
+Grooming Package,Amanda White,Daisy,12-12-2024,11:30 AM,60.0,PAID
+Pet Sitting,Daniel Harris,Buddy,12-15-2024,8:00 AM,30.0,UNPAID
+Training Session,Jessica Clark,Cooper,12-18-2024,2:00 PM,50.0,PAID
+Health Checkup,Matthew Lewis,Princess,12-20-2024,10:00 AM,70.0,UNPAID
+Nail Trimming,Ashley Walker,Mittens,12-22-2024,1:30 PM,25.0,PAID
