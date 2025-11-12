@@ -1,33 +1,17 @@
-import java.awt.*;
-import java.util.*;
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Animal Sales Management
- * ---------------------
- * Tracks and manages animal sales and acquisitions.
- * Handles animal records, pricing, and breeder information.
- * Supports both breeder-sourced and direct sales.
- */
 public class AnimalsManager {
-    static ArrayList<AnimalSale> animals = new ArrayList<>();
+    private final List<AnimalSale> animals = new ArrayList<>();
 
-    /**
-     * Animal Sales Data
-     * ----------------
-     * Records details of animals available for sale,
-     * including breed info, pricing, and source details.
-     */
+    /** ==================== INNER CLASS ==================== */
     static class AnimalSale {
-        String name;  // animal name/identifier
-        String breed;
-        String gender;
-        String age;
+        String name, breed, gender, age, breederName;
         double price;
-        String breederName; // empty if not from local breeder
 
-        AnimalSale(String name, String breed, String gender, String age,
-                  double price, String breederName) {
+        AnimalSale(String name, String breed, String gender, String age, double price, String breederName) {
             this.name = name;
             this.breed = breed;
             this.gender = gender;
@@ -37,21 +21,25 @@ public class AnimalsManager {
         }
 
         String toCSV() {
-            return Main.escape(name) + "," + Main.escape(breed) + "," +
-                   Main.escape(gender) + "," + Main.escape(age) + "," +
-                   price + "," + Main.escape(breederName);
+            return String.join(",",
+                    Main.escape(name),
+                    Main.escape(breed),
+                    Main.escape(gender),
+                    Main.escape(age),
+                    String.valueOf(price),
+                    Main.escape(breederName));
         }
 
         static AnimalSale fromCSV(String line) {
             String[] p = line.split(",", -1);
             if (p.length < 6) return null;
             return new AnimalSale(
-                Main.unescape(p[0]),
-                Main.unescape(p[1]),
-                Main.unescape(p[2]),
-                Main.unescape(p[3]),
-                Main.parseDouble(p[4]),
-                Main.unescape(p[5])
+                    Main.unescape(p[0]),
+                    Main.unescape(p[1]),
+                    Main.unescape(p[2]),
+                    Main.unescape(p[3]),
+                    Main.parseDouble(p[4]),
+                    Main.unescape(p[5])
             );
         }
 
@@ -59,18 +47,12 @@ public class AnimalsManager {
         public String toString() {
             String breeder = (breederName == null || breederName.isBlank()) ? "—" : breederName;
             return String.format("%-14s | %-12s | %-6s | age=%-6s | $%.2f | breeder: %s",
-                name, breed, gender, age, price, breeder);
+                    name, breed, gender, age, price, breeder);
         }
     }
 
-    /**
-     * File Operations
-     * --------------
-     * Manages animal records in CSV storage.
-     * Handles loading and saving of animal data
-     * with basic error handling.
-     */
-    static void loadAnimals() {
+    /** ==================== FILE OPS ==================== */
+    public void loadAnimals() {
         animals.clear();
         for (String line : Main.Store.readLines(Main.Store.ANM_FILE)) {
             AnimalSale a = AnimalSale.fromCSV(line);
@@ -78,206 +60,127 @@ public class AnimalsManager {
         }
     }
 
-    static void saveAnimals() {
-        ArrayList<String> lines = new ArrayList<>();
-        for (AnimalSale a : animals) lines.add(a.toCSV());
+    public void saveAnimals() {
+        List<String> lines = animals.stream().map(AnimalSale::toCSV).toList();
         Main.Store.writeLines(Main.Store.ANM_FILE, lines);
     }
 
-    /**
-     * Animals Menu
-     * -----------
-     * Main interface for animal management.
-     * Provides options to add, edit, remove animals,
-     * and manage breeder information.
-     */
-    static void animalsMenu(ImageIcon logo) {
-    while (true) {
-        // Header
-        JLabel logoLabel = new JLabel(logo);
-        logoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    /** ==================== MENU ==================== */
+    public void showMenu(ImageIcon logo) {
+        while (true) {
+            Object choice = createMenuDialog(logo);
+            if (choice == null || choice.equals("BACK")) break;
 
-        JLabel titleLabel = new JLabel("      +========== Animals ==========+ ");
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JSeparator sep = new JSeparator();
-        sep.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-
-        JLabel instructionLabel = new JLabel("Select:");
-        instructionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Buttons
-        JButton bAdd   = new JButton("Add");
-        JButton bEdit  = new JButton("Edit");
-        JButton bRem   = new JButton("Remove");
-        JButton bList  = new JButton("List");
-        JButton bBack  = new JButton("Back");
-
-        // Uniform sizes (use the largest preferred size among buttons)
-        JButton[] all = { bAdd, bEdit, bRem, bList, bBack };
-        int maxW = 0, maxH = 0;
-        for (JButton b : all) {
-            Dimension d = b.getPreferredSize();
-            maxW = Math.max(maxW, d.width);
-            maxH = Math.max(maxH, d.height);
+            try {
+                switch (String.valueOf(choice)) {
+                    case "ADD"  -> addAnimal(logo);
+                    case "EDIT" -> editAnimal(logo);
+                    case "REM"  -> removeAnimal(logo);
+                    case "LIST" -> listAnimals(logo);
+                }
+            } catch (Exception e) {
+                Main.error("Error: " + e.getMessage(), logo);
+            }
         }
-        Dimension uni = new Dimension(maxW, maxH);
-        for (JButton b : all) {
-            b.setPreferredSize(uni);
-            b.setMinimumSize(uni);
-            b.setMaximumSize(uni);
-        }
+    }
 
-        // Row 1: Add, Edit, Remove
-        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        row1.add(bAdd); row1.add(bEdit); row1.add(bRem);
-        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Row 2: List, Back
-        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        row2.add(bList); row2.add(bBack);
-        row2.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Root vertical content
+    private Object createMenuDialog(ImageIcon logo) {
         JPanel root = new JPanel();
-        root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
-        root.add(logoLabel);
-        root.add(Box.createVerticalStrut(6));
-        root.add(titleLabel);
-        root.add(Box.createVerticalStrut(6));
-        root.add(sep);
-        root.add(Box.createVerticalStrut(10));
-        root.add(instructionLabel);
-        root.add(Box.createVerticalStrut(10));
-        root.add(row1);
-        root.add(Box.createVerticalStrut(8));
-        root.add(row2);
+        root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // JOptionPane with custom content
+        JLabel title = new JLabel("      +========== Animals ==========+ ");
+        title.setFont(new Font("SansSerif", Font.BOLD, 14));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton bAdd = new JButton("Add");
+        JButton bEdit = new JButton("Edit");
+        JButton bRem = new JButton("Remove");
+        JButton bList = new JButton("List");
+        JButton bBack = new JButton("Back");
+
+        JPanel buttons = new JPanel(new GridLayout(2, 3, 8, 8));
+        buttons.add(bAdd);
+        buttons.add(bEdit);
+        buttons.add(bRem);
+        buttons.add(bList);
+        buttons.add(bBack);
+
+        root.add(title);
+        root.add(Box.createVerticalStrut(10));
+        root.add(buttons);
+
         JOptionPane pane = new JOptionPane(
-                root,
-                JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.DEFAULT_OPTION,
-                null,
-                new Object[]{},
-                null
+                root, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                null, new Object[]{}, null
         );
         JDialog dlg = pane.createDialog(null, "Animals Menu");
-        dlg.setModal(true);
-        dlg.setResizable(false);
 
-        // Actions → set value then close
         Runnable close = dlg::dispose;
-        bAdd.addActionListener(_  -> { pane.setValue("ADD");  close.run(); });
+        bAdd.addActionListener(_ -> { pane.setValue("ADD"); close.run(); });
         bEdit.addActionListener(_ -> { pane.setValue("EDIT"); close.run(); });
-        bRem.addActionListener(_  -> { pane.setValue("REM");  close.run(); });
+        bRem.addActionListener(_ -> { pane.setValue("REM"); close.run(); });
         bList.addActionListener(_ -> { pane.setValue("LIST"); close.run(); });
         bBack.addActionListener(_ -> { pane.setValue("BACK"); close.run(); });
 
         dlg.setLocationRelativeTo(null);
         dlg.setVisible(true);
-
-        Object val = pane.getValue();
-        if (val == null || "BACK".equals(val)) break;
-
-        try {
-            switch (String.valueOf(val)) {
-                case "ADD"  -> addAnimal(logo);
-                case "EDIT" -> editAnimal(logo);
-                case "REM"  -> removeAnimal(logo);
-                case "LIST" -> listAnimals(logo);
-            }
-        } catch (Exception e) {
-            Main.error("Error: " + e.getMessage(), logo);
-        }
+        return pane.getValue();
     }
-}
 
-    /**
-     * Animal Management Actions
-     * ----------------------
-     * Core functions for managing animal records.
-     * Includes adding new animals, updating details,
-     * and handling animal sales transactions.
-     */
-    static void addAnimal(ImageIcon logo) {
-        String name = Main.clean(Main.prompt("Animal name/ID:", logo));
-        if (name == null || name.isEmpty()) return;
-        
-        String breed = Main.clean(Main.prompt("Breed:", logo));
+    /** ==================== CRUD ACTIONS ==================== */
+    private void addAnimal(ImageIcon logo) {
+        String name = promptField("Animal name/ID:", null, logo);
+        if (name == null) return;
+
+        String breed = promptField("Breed:", null, logo);
         if (breed == null) return;
-        
-        String gender = Main.clean(Main.prompt("Gender:", logo));
+
+        String gender = promptField("Gender:", null, logo);
         if (gender == null) return;
-        
-        String age = Main.clean(Main.prompt("Age:", logo));
+
+        String age = promptField("Age:", null, logo);
         if (age == null) return;
-        
+
         double price = Main.askDouble("Price:", logo);
-        
-        String breeder = Main.clean(Main.prompt("Breeder name (optional):", logo));
-        if (breeder == null) breeder = "";
-        
+        String breeder = promptField("Breeder name (optional):", "", logo);
+
         animals.add(new AnimalSale(name, breed, gender, age, price, breeder));
         Main.info("Animal sale added.", logo);
     }
 
-    static void editAnimal(ImageIcon logo) {
+    private void editAnimal(ImageIcon logo) {
         if (animals.isEmpty()) {
             Main.info("No animals yet.", logo);
             return;
         }
-        
-        int idx = Main.pickIndex("Select animal ID to edit:", formatAnimalsTable(), animals.size(), logo);
+
+        int idx = Main.pickIndex("Select animal to edit:", formatAnimalsTable(), animals.size(), logo);
         if (idx < 0) return;
-        
+
         AnimalSale a = animals.get(idx);
-        
-        String name = Main.promptDefault("Name/ID:", a.name, logo);
-        if (name == null) return;
-        
-        String breed = Main.promptDefault("Breed:", a.breed, logo);
-        if (breed == null) return;
-        
-        String gender = Main.promptDefault("Gender:", a.gender, logo);
-        if (gender == null) return;
-        
-        String age = Main.promptDefault("Age:", a.age, logo);
-        if (age == null) return;
-        
-        String prStr = Main.promptDefault("Price:", String.valueOf(a.price), logo);
-        if (prStr == null) return;
-        
-        String breeder = Main.promptDefault("Breeder:", a.breederName, logo);
-        if (breeder == null) return;
-        
-        a.name = Main.clean(name);
-        a.breed = Main.clean(breed);
-        a.gender = Main.clean(gender);
-        a.age = Main.clean(age);
-        a.price = Main.parseDouble(prStr.trim());
-        a.breederName = Main.clean(breeder);
-        
+        a.name = promptField("Name/ID:", a.name, logo);
+        a.breed = promptField("Breed:", a.breed, logo);
+        a.gender = promptField("Gender:", a.gender, logo);
+        a.age = promptField("Age:", a.age, logo);
+        a.price = Main.parseDouble(promptField("Price:", String.valueOf(a.price), logo));
+        a.breederName = promptField("Breeder:", a.breederName, logo);
+
         Main.info("Animal updated.", logo);
     }
 
-    static void removeAnimal(ImageIcon logo) {
+    private void removeAnimal(ImageIcon logo) {
         if (animals.isEmpty()) {
             Main.info("No animals yet.", logo);
             return;
         }
-        
         int idx = Main.pickIndex("Select animal ID to remove:", formatAnimalsTable(), animals.size(), logo);
         if (idx < 0) return;
-        
         animals.remove(idx);
         Main.info("Animal removed.", logo);
     }
 
-    static void listAnimals(ImageIcon logo) {
+    private void listAnimals(ImageIcon logo) {
         if (animals.isEmpty()) {
             Main.info("No animals recorded.", logo);
             return;
@@ -285,27 +188,35 @@ public class AnimalsManager {
         Main.showLarge(formatAnimalsTable(), "Animal Sales", logo);
     }
 
-    static String formatAnimalsTable() {
+    private String formatAnimalsTable() {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%-4s %-14s %-12s %-8s %-8s %-10s %-20s%n",
-            "ID", "Name", "Breed", "Gender", "Age", "Price", "Breeder"));
-        sb.append("--------------------------------------------------------------------------------\n");
-        
+                "ID", "Name", "Breed", "Gender", "Age", "Price", "Breeder"));
+        sb.append("-".repeat(80)).append("\n");
+
         for (int i = 0; i < animals.size(); i++) {
             AnimalSale a = animals.get(i);
-            String breeder = (a.breederName == null || a.breederName.isBlank()) ? "—" : a.breederName;
-            
-            // Truncate fields if too long
-            String name = a.name.length() > 14 ? a.name.substring(0, 11) + "..." : a.name;
-            String breed = a.breed.length() > 12 ? a.breed.substring(0, 9) + "..." : a.breed;
-            String gender = a.gender.length() > 8 ? a.gender.substring(0, 5) + "..." : a.gender;
-            String age = a.age.length() > 8 ? a.age.substring(0, 5) + "..." : a.age;
-            String breederDisplay = breeder.length() > 20 ? breeder.substring(0, 17) + "..." : breeder;
-            
             sb.append(String.format("%-4d %-14s %-12s %-8s %-8s $%-9.2f %-20s%n",
-                i, name, breed, gender, age, a.price, breederDisplay));
+                    i,
+                    truncate(a.name, 14),
+                    truncate(a.breed, 12),
+                    truncate(a.gender, 8),
+                    truncate(a.age, 8),
+                    a.price,
+                    truncate(a.breederName == null || a.breederName.isBlank() ? "—" : a.breederName, 20)
+            ));
         }
-        
         return sb.toString();
+    }
+
+    private static String truncate(String s, int max) {
+        return (s != null && s.length() > max) ? s.substring(0, max - 3) + "..." : s;
+    }
+
+    private static String promptField(String label, String def, ImageIcon logo) {
+        String input = (def == null)
+                ? Main.prompt(label, logo)
+                : Main.promptDefault(label, def, logo);
+        return (input == null) ? null : Main.clean(input);
     }
 }
